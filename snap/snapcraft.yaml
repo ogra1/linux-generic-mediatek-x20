@@ -1,15 +1,14 @@
 name: linux-generic-mediatek-x20
 version: '4.11.0-13.19'
-summary: Ubuntus linux-generic kernel adjusted for allwinner
+summary: Ubuntus linux-generic kernel adjusted for the mediatek-x20 board
 description: |
-  This is my-snap's description. You have a paragraph or two to tell the
-  most important story about your snap. Keep it under 100 words though,
-  we live in tweetspace and your description wants to look good in the snap
-  store.
+  This kernel snap uses the ubuntu kernel tree from kernel.ubuntu.com
+  and applies the necessary patches to make it work on the 96boards
+  mediatek-x20 board.
 
 architectures: [arm64]
-grade: devel # must be 'stable' to release into candidate/stable channels
-confinement: devmode # use 'strict' once you have the right plugs and slots
+grade: stable
+confinement: strict
 
 parts:
   builddeb:
