@@ -1,0 +1,45 @@
+name: linux-generic-mediatek-x20
+version: '4.11.0-13.19'
+summary: Ubuntus linux-generic kernel adjusted for allwinner
+description: |
+  This is my-snap's description. You have a paragraph or two to tell the
+  most important story about your snap. Keep it under 100 words though,
+  we live in tweetspace and your description wants to look good in the snap
+  store.
+
+architectures: [arm64]
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: devmode # use 'strict' once you have the right plugs and slots
+
+parts:
+  builddeb:
+    plugin: make
+    source: .
+    prepare: |
+      VER=Ubuntu-4.11.0-13.19
+      git clone --depth=1 git://kernel.ubuntu.com/ubuntu/ubuntu-artful.git -b $VER linux
+      TCHAINVER="$(wget -q -O - \
+                 https://releases.linaro.org/components/toolchain/binaries/latest/aarch64-linux-gnu/| \
+                 html2text -width 200|grep 'x86_64_aarch64-linux-gnu.tar.xz '|cut -d' ' -f2)"
+      wget https://releases.linaro.org/components/toolchain/binaries/latest/aarch64-linux-gnu/$TCHAINVER
+      tar xf $TCHAINVER
+      mv $(echo $TCHAINVER|sed 's/.tar.xz$//') linux/toolchain
+      git clone --depth=1 --branch 4.11 https://github.com/freedomtan/patches-mainline-x20-96board.git patches
+      set -ex
+      cd linux
+      for patch in ../patches/basic-dts-and-clk/*; do git apply $patch; done
+      for patch in ../patches/others/*; do git apply $patch; done
+      git apply ../../../../config.patch
+    build: |
+      cd linux
+      export $(dpkg-architecture -aarm64)
+      export ARCH=arm64
+      export CROSS_COMPILE=$(pwd)/toolchain/bin/aarch64-linux-gnu-
+      fakeroot debian/rules clean
+      fakeroot debian/rules binary-generic skipabi=true skipmodule=true
+    install: |
+      echo "install"
+    stage-packages:
+      - fakeroot
+      - dpkg-dev
+
